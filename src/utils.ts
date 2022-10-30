@@ -1,4 +1,4 @@
-import type { StoneProps, StonePropsNum } from "./board"
+import type { StoneProps, StonePropsNum } from "./types"
 
 export const toNumCoords = (s: StoneProps): StonePropsNum => {
   if (typeof s.coords === "string") {

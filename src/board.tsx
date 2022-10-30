@@ -5,31 +5,13 @@ import { Option } from "fp-ts/Option"
 import { identity } from "fp-ts/function"
 import { produce, current } from "immer"
 import { Color, Game, Position } from "wgo"
-
-export type MyColor = Color
+import type { StoneProps, StonePropsNum, Space, BoardType } from "./types"
 
 const basis = 48
 const nineteen = [...Array(19).keys()]
 const nineteenByNineteen = nineteen.flatMap((x) =>
   nineteen.map((y) => [x, y] as [number, number])
 )
-
-export interface StoneProps {
-  color: MyColor
-  coords: [number, number] | string
-}
-
-export interface StonePropsNum {
-  color: MyColor
-  coords: [number, number]
-}
-
-interface Space {
-  color?: MyColor
-  move?: number
-}
-
-type Board = Space[][]
 
 const emptySpace: Space = { color: undefined }
 
@@ -56,11 +38,11 @@ const Stone = (props: StoneProps) => {
 }
 
 export const addStone = (
-  board: Board,
+  board: BoardType,
   coords: [number, number] | string,
-  color: MyColor,
+  color: Color,
   move?: number
-): Board =>
+): BoardType =>
   produce(board, (draft) => {
     const [x, y] =
       typeof coords === "string" ? [...coords].map((c) => c.charCodeAt(0) - 97) : coords
@@ -76,7 +58,9 @@ export const gameToBoard = (g: Game) => {
   return board
 }
 
-export const Board: Component<{ board?: Board; stones?: StoneProps[] }> = (props) => {
+export const Board: Component<{ board?: BoardType; stones?: StoneProps[] }> = (
+  props
+) => {
   const board = props.board || emptyBoard
   const stones = props.stones || []
 

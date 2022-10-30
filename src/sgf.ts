@@ -1,16 +1,7 @@
 import { parse } from "@sabaki/sgf"
-import type { StonePropsNum, StoneProps, MyColor } from "./board"
 import { Color, Game } from "wgo"
 import { toNumCoords } from "./utils"
-
-type SGFNodeData = ({ W: string[] } | { B: string[] }) & { [key: string]: any }
-
-interface SGFNode {
-  id: number
-  data: SGFNodeData
-  parentId: number
-  children: SGFNode[]
-}
+import type { SGFNodeData, SGFNode, StoneProps } from "./types"
 
 function* sgfIter(node: SGFNode) {
   let current = node
