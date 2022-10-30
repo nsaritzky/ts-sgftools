@@ -1,3 +1,4 @@
+import { Accessor, Setter } from "solid-js"
 import type { Color } from "wgo"
 
 export type SGFNodeData = ({ W: string[] } | { B: string[] }) & { [key: string]: any }
@@ -19,9 +20,15 @@ export interface StonePropsNum {
   coords: [number, number]
 }
 
-export interface Space {
-  color?: Color
-  move?: number
+export type Board = Space[][]
+
+export interface BoardProps {
+  board?: Board
+  stones?: StoneProps[]
 }
 
-export type Board = Space[][]
+export interface Space {
+  color: Accessor<Color>
+  move?: number
+  setColor: Setter<Color>
+}
