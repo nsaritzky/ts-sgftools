@@ -3,25 +3,35 @@ import { Component, For, Show } from "solid-js"
 import { updateAt, modifyAt } from "fp-ts/Array"
 import { Option } from "fp-ts/Option"
 import { identity } from "fp-ts/function"
-import { produce } from "immer"
+import { produce, current } from "immer"
+import { Color, Game, Position } from "wgo"
 
-type Color = "white" | "black"
+export type MyColor = Color
 
 const basis = 48
+const nineteen = [...Array(19).keys()]
+const nineteenByNineteen = nineteen.flatMap((x) =>
+  nineteen.map((y) => [x, y] as [number, number])
+)
 
-interface StoneProps {
-  color: Color
+export interface StoneProps {
+  color: MyColor
   coords: [number, number] | string
 }
 
+export interface StonePropsNum {
+  color: MyColor
+  coords: [number, number]
+}
+
 interface Space {
-  color?: Color
+  color?: MyColor
   move?: number
 }
 
 type Board = Space[][]
 
-const emptySpace: Space = { color: null }
+const emptySpace: Space = { color: undefined }
 
 const emptyBoard: Space[][] = [...Array(19).keys()].map((_) =>
   [...Array(19).keys()].map((_) => emptySpace)
@@ -40,7 +50,7 @@ const Stone = (props: StoneProps) => {
       cx={basis * (x - 1)}
       cy={basis * (19 - y)}
       r={basis / 2 - 1}
-      fill={props.color}
+      fill={props.color === Color.B ? "black" : "white"}
     />
   )
 }
@@ -48,23 +58,31 @@ const Stone = (props: StoneProps) => {
 export const addStone = (
   board: Board,
   coords: [number, number] | string,
-  color: Color,
+  color: MyColor,
   move?: number
 ): Board =>
   produce(board, (draft) => {
     const [x, y] =
-      typeof coords === "string" ? [...coords].map((c) => c.charCodeAt(0) - 96) : coords
+      typeof coords === "string" ? [...coords].map((c) => c.charCodeAt(0) - 97) : coords
     draft[x][y] = { color, move }
   })
+
+export const gameToBoard = (g: Game) => {
+  const board = emptyBoard
+  for (const [x, y] of nineteenByNineteen) {
+    console.log(g.getStone(x, y))
+    board[x][y] = { color: g.getStone(x, y) || undefined }
+  }
+  return board
+}
 
 export const Board: Component<{ board?: Board; stones?: StoneProps[] }> = (props) => {
   const board = props.board || emptyBoard
   const stones = props.stones || []
 
-  const filledBoard = stones.reduce(
-    (brd, stone) => addStone(brd, stone.coords, stone.color),
-    board
-  )
+  const filledBoard = stones.reduce((brd, stone) => {
+    return addStone(brd, stone.coords, stone.color)
+  }, board)
 
   return (
     <Grid>
@@ -73,7 +91,7 @@ export const Board: Component<{ board?: Board; stones?: StoneProps[] }> = (props
           <For each={row}>
             {(space, j) => (
               <Show when={space.color}>
-                <Stone color={space.color} coords={[i(), j()]} />
+                <Stone color={space.color!} coords={[i() + 1, j() + 1]} />
               </Show>
             )}
           </For>
