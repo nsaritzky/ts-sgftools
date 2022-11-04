@@ -11,17 +11,20 @@ const Reader: Component<ReaderProps> = (props) => {
   const tree = createMemo(() => strToTree(props.sgf))
 
   const nextNode = () => {
-    setNodeID((prev) => tree().navigate(prev, 1, {}).id as number)
-    console.log(tree().get(nodeID()))
+    setNodeID((curr) => tree().navigate(curr, 1, {}).id as number)
+  }
+  const prevNode = () => {
+    setNodeID((curr) => tree().navigate(curr, -1, {}).id as number)
   }
 
   return (
     <>
-      <button onclick={nextNode}>next</button>
       <BoardFromStringToStones
         nodes={branchUpTo(tree(), nodeID())}
         lastMove={nodeID()}
       />
+      <button onclick={prevNode}>prev</button>
+      <button onclick={nextNode}>next</button>
     </>
   )
 }

@@ -132,7 +132,6 @@ export const sequenceToBoard = (
     return board
   } else {
     const coords = getCoords(seq.at(-1)!)
-    console.log(coords)
     if (coords === null) {
       throw Error("The last node in the sequence has no coordinates")
     } else {
@@ -165,8 +164,7 @@ export const nodesToStones = (nodes: NodeObject[]): StoneProps[] => {
     if (coords) {
       const [x, y] = coords
       g.play(x - 1, y - 1)
-      console.log(node)
-      board[x][y].move = node.id as number
+      board[x - 1][y - 1].move = node.id as number
     }
   }
   const ret = nineteenByNineteen
@@ -176,7 +174,7 @@ export const nodesToStones = (nodes: NodeObject[]): StoneProps[] => {
         ({
           color: g.getStone(x, y),
           coords: [x + 1, y + 1],
-          nodeId: board[x + 1][y + 1].move,
+          nodeId: board[x][y].move,
         } as StoneProps)
     )
   return ret

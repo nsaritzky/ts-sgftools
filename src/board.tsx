@@ -1,5 +1,5 @@
 import Grid from "./grid"
-import { Component, createSignal, For, mergeProps, Show } from "solid-js"
+import { Component, createEffect, createSignal, For, mergeProps, Show } from "solid-js"
 import { updateAt, modifyAt } from "fp-ts/Array"
 import { Option } from "fp-ts/Option"
 import { identity } from "fp-ts/function"
@@ -138,12 +138,14 @@ export const BoardFromString: Component<{ sgf: string }> = (props) => {
 export const BoardFromStringToStones: Component<{
   nodes: NodeObject[]
   lastMove: number
-}> = (props) => (
-  <Grid>
-    <For each={nodesToStones(props.nodes)}>
-      {(stoneProps) => (
-        <Stone {...stoneProps} marked={stoneProps.nodeId === props.lastMove} />
-      )}
-    </For>
-  </Grid>
-)
+}> = (props) => {
+  return (
+    <Grid>
+      <For each={nodesToStones(props.nodes)}>
+        {(stoneProps) => (
+          <Stone {...stoneProps} marked={stoneProps.nodeId === props.lastMove} />
+        )}
+      </For>
+    </Grid>
+  )
+}
