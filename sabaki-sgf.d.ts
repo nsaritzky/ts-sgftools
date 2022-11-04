@@ -8,5 +8,8 @@ declare module "@sabaki/sgf" {
     children: SGFNode[]
   }
 
-  export function parse(inp: string, options: { encoding: string }): SGFNode[]
+  export function parse(
+    inp: string,
+    options?: { encoding?: string; getId?: () => number }
+  ): SGFNode[]
 }

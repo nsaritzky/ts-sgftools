@@ -12,6 +12,17 @@ import type {
   Board as BoardType,
   BoardProps,
 } from "./types"
+import {
+  branchUpTo,
+  nodesToStones,
+  sequenceToBoard,
+  sequenceToGame,
+  strToBoard,
+  strToStones,
+} from "./sgf"
+import GameTree, { NodeObject } from "@sabaki/immutable-gametree"
+import * as NEA from "fp-ts/NonEmptyArray"
+import Stone from "./components/stone"
 
 const basis = 48
 const nineteen = [...Array(19).keys()]
@@ -27,24 +38,24 @@ const emptySpace = (): Space => {
 const emptyBoard: Space[][] = [...Array(19).keys()].map((_) =>
   [...Array(19).keys()].map((_) => emptySpace())
 )
-
-const Stone = (props: StoneProps) => {
-  let x: number, y: number
-  if (typeof props.coords === "string") {
-    ;[x, y] = [...props.coords].map((c) => c.charCodeAt(0) - 96)
-  } else {
-    ;[x, y] = props.coords
-  }
-  return (
-    <circle
-      stroke="black"
-      cx={basis * (x - 1)}
-      cy={basis * (19 - y)}
-      r={basis / 2 - 1}
-      fill={props.color === Color.B ? "black" : "white"}
-    />
-  )
-}
+/*
+ * const Stone = (props: StoneProps) => {
+ *   let x: number, y: number
+ *   if (typeof props.coords === "string") {
+ *     ;[x, y] = [...props.coords].map((c) => c.charCodeAt(0) - 96)
+ *   } else {
+ *     ;[x, y] = props.coords
+ *   }
+ *   return (
+ *     <circle
+ *       stroke="black"
+ *       cx={basis * (x - 1)}
+ *       cy={basis * (19 - y)}
+ *       r={basis / 2 - 1}
+ *       fill={props.color === Color.B ? "black" : "white"}
+ *     />
+ *   )
+ * } */
 
 export const addStone = (
   board: BoardType,
@@ -67,7 +78,7 @@ export const gameToBoard = (g: Game) => {
 }
 
 export const Board: Component<BoardProps> = (props) => {
-  const merged: Required<BoardProps> = mergeProps(
+  const merged: Required<Pick<BoardProps, "board" | "stones">> = mergeProps(
     { board: emptyBoard, stones: [] as StoneProps[] },
     props
   )
@@ -84,7 +95,11 @@ export const Board: Component<BoardProps> = (props) => {
           <For each={row}>
             {(space, j) => (
               <Show when={space.color()}>
-                <Stone color={space.color()} coords={[i() + 1, j() + 1]} />
+                <Stone
+                  color={space.color()}
+                  coords={[i() + 1, j() + 1]}
+                  marked={space.marked}
+                />
               </Show>
             )}
           </For>
@@ -93,3 +108,42 @@ export const Board: Component<BoardProps> = (props) => {
     </Grid>
   )
 }
+
+export const BoardFromString: Component<{ sgf: string }> = (props) => {
+  const filledBoard = () =>
+    strToBoard(props.sgf, {
+      markLast: true,
+    })
+  return (
+    <Grid>
+      <For each={filledBoard()}>
+        {(row, i) => (
+          <For each={row}>
+            {(space, j) => (
+              <Show when={space.color()}>
+                <Stone
+                  color={space.color()}
+                  coords={[i() + 1, j() + 1]}
+                  marked={space.marked}
+                />
+              </Show>
+            )}
+          </For>
+        )}
+      </For>
+    </Grid>
+  )
+}
+
+export const BoardFromStringToStones: Component<{
+  nodes: NodeObject[]
+  lastMove: number
+}> = (props) => (
+  <Grid>
+    <For each={nodesToStones(props.nodes)}>
+      {(stoneProps) => (
+        <Stone {...stoneProps} marked={stoneProps.nodeId === props.lastMove} />
+      )}
+    </For>
+  </Grid>
+)
