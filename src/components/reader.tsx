@@ -7,6 +7,7 @@ import { getComment, readPointLoss } from "../card-maker"
 import { biggestPointLosses, altSequence } from "../card-maker"
 import { siblingNodes } from "../utils"
 import { chainNullableK } from "fp-ts/lib/Option"
+import CommentBox from "./comment-box"
 
 interface Props {
   sgf: string
@@ -21,7 +22,6 @@ const Reader: Component<Props> = (props) => {
   const isFirstSibling = () => tree().listNodesHorizontally(nodeID(), -1)[1] == null
   const isLastSibling = () => tree().listNodesHorizontally(nodeID(), 1) == null
   const mistakes = () => [...tree().listMainNodes()].filter((n) => n.data.C)
-  console.log(biggestPointLosses(3, [...tree().listMainNodes()]))
 
   const nextNode = () => {
     if (getComment(node())) {
@@ -31,6 +31,7 @@ const Reader: Component<Props> = (props) => {
       setNodeID((curr) =>
         tree().navigate(curr, 1, {}) ? tree().navigate(curr, 1, {}).id : curr
       )
+      console.log(node().data["C"][0])
     }
   }
   const prevNode = () => {
@@ -107,6 +108,7 @@ const Reader: Component<Props> = (props) => {
           />
         </button>
       </div>
+      <CommentBox comment={node().data.C && node().data.C[0]} />
     </>
   )
 }
