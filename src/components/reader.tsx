@@ -2,12 +2,23 @@ import { Component, createMemo, createSignal } from "solid-js"
 import { BoardFromStringToStones } from "../board"
 import { branchUpTo, strToTree } from "../sgf"
 import { NodeObject } from "@sabaki/immutable-gametree"
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-solid"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronUp,
+  ChevronDown,
+  ChevronFirst,
+  ChevronLast,
+} from "lucide-solid"
 import { getComment, readPointLoss } from "../card-maker"
 import { biggestPointLosses, altSequence } from "../card-maker"
 import { siblingNodes } from "../utils"
 import { chainNullableK } from "fp-ts/lib/Option"
 import CommentBox from "./comment-box"
+
+const JUMP_SIZE = 10
 
 interface Props {
   sgf: string
@@ -31,13 +42,32 @@ const Reader: Component<Props> = (props) => {
       setNodeID((curr) =>
         tree().navigate(curr, 1, {}) ? tree().navigate(curr, 1, {}).id : curr
       )
-      console.log(node().data["C"][0])
     }
   }
   const prevNode = () => {
     if (tree()) {
       setNodeID((curr) =>
         tree().navigate(curr, -1, {}) ? tree().navigate(curr, -1).id : curr
+      )
+    }
+  }
+
+  const jumpBack = () => {
+    if (tree()) {
+      setNodeID((curr) =>
+        tree().navigate(curr, -1 * JUMP_SIZE, {})
+          ? tree().navigate(curr, -1 * JUMP_SIZE, {}).id
+          : tree().root.id
+      )
+    }
+  }
+
+  const jumpForward = () => {
+    if (tree()) {
+      setNodeID((curr) =>
+        tree().navigate(curr, JUMP_SIZE, {})
+          ? tree().navigate(curr, JUMP_SIZE, {}).id
+          : curr
       )
     }
   }
@@ -58,6 +88,21 @@ const Reader: Component<Props> = (props) => {
     }
   }
 
+  const jumpToFirst = () => {
+    if (tree()) {
+      setNodeID(tree().root.id)
+    }
+  }
+
+  const jumpToLast = () => {
+    if (tree()) {
+      setNodeID((curr) => {
+        const branch = [...tree().listNodesVertically(curr, 1, {})]
+        return branch[branch.length - 1].id
+      })
+    }
+  }
+
   return (
     <>
       <BoardFromStringToStones
@@ -66,6 +111,38 @@ const Reader: Component<Props> = (props) => {
       />
 
       <div class="flex justify-center">
+        <button
+          disabled={isFirstNode()}
+          aria-label="first node"
+          onclick={jumpToFirst}
+          tabindex={0}
+        >
+          <ChevronFirst
+            color={isFirstNode() ? "gray" : "black"}
+            aria-hidden
+            size={36}
+          />
+        </button>
+        <button
+          disabled={isFirstNode()}
+          aria-label="previous node"
+          onclick={jumpBack}
+          tabindex={0}
+        >
+          <ChevronsLeft
+            color={isFirstNode() ? "gray" : "black"}
+            aria-hidden
+            size={36}
+          />
+        </button>
+        <button
+          disabled={isFirstNode()}
+          aria-label="previous node"
+          onclick={prevNode}
+          tabindex={0}
+        >
+          <ChevronLeft color={isFirstNode() ? "gray" : "black"} aria-hidden size={36} />
+        </button>
         <button
           disabled={isFirstSibling()}
           aria-label="previous sibling"
@@ -79,23 +156,6 @@ const Reader: Component<Props> = (props) => {
           />
         </button>
         <button
-          disabled={isFirstNode()}
-          aria-label="previous node"
-          onclick={prevNode}
-          tabindex={0}
-        >
-          <ChevronLeft color={isFirstNode() ? "gray" : "black"} aria-hidden size={36} />
-        </button>
-
-        <button
-          disabled={isLastNode()}
-          aria-label="next node"
-          onclick={nextNode}
-          tabIndex={0}
-        >
-          <ChevronRight color={isLastNode() ? "gray" : "black"} aria-hidden size={36} />
-        </button>
-        <button
           disabled={isLastSibling()}
           aria-label="next sibling"
           onclick={nextSibling}
@@ -106,6 +166,34 @@ const Reader: Component<Props> = (props) => {
             aria-hidden
             size={36}
           />
+        </button>
+        <button
+          disabled={isLastNode()}
+          aria-label="next node"
+          onclick={nextNode}
+          tabIndex={0}
+        >
+          <ChevronRight color={isLastNode() ? "gray" : "black"} aria-hidden size={36} />
+        </button>
+        <button
+          disabled={isLastNode()}
+          aria-label="next node"
+          onclick={jumpForward}
+          tabIndex={0}
+        >
+          <ChevronsRight
+            color={isLastNode() ? "gray" : "black"}
+            aria-hidden
+            size={36}
+          />
+        </button>
+        <button
+          disabled={isLastNode()}
+          aria-label="next node"
+          onclick={jumpToLast}
+          tabIndex={0}
+        >
+          <ChevronLast color={isLastNode() ? "gray" : "black"} aria-hidden size={36} />
         </button>
       </div>
       <CommentBox comment={node().data.C && node().data.C[0]} />
